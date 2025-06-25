@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Reg Facebook Novery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #181C24;
+            color: #eee;
+            margin: 0;
+            padding: 0;
+        }
+
+        .table-container {
+            width: 100%;
+            max-width: 1300px;
+            /* Bạn chỉnh theo ý muốn */
+            margin: 40px auto;
+            overflow-x: auto;
+            background: transparent;
+        }
+
+        table {
+            width: 1300px;
+            /* Cố định table width */
+            min-width: 700px;
+            /* Table sẽ không nhỏ hơn mức này */
+            background: #23262F;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px #0005;
+            table-layout: fixed;
+            /* Rất quan trọng: Không cho phép cột co giãn */
+        }
+
+        /* Cố định độ rộng các cột */
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #313543;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 13px;
+        }
+
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 40px;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 40px;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 200px;
+        }
+
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 150px;
+        }
+
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 150px;
+        }
+
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 200px;
+        }
+
+        th:nth-child(7),
+        td:nth-child(7) {
+            width: 250px;
+        }
+
+        th {
+            background: #252A36;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        @media (max-width: 1000px) {
+
+            .table-container,
+            table {
+                width: 100vw;
+                min-width: 600px;
+                max-width: 100vw;
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .table-container,
+            table {
+                min-width: 480px;
+                width: 100vw;
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 8px 4px;
+            }
+        }
+
+        button {
+            margin: 0 4px;
+            padding: 5px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #3444ee;
+            color: #fff;
+            transition: background .2s;
+        }
+
+        button.save {
+            background: #43a047;
+        }
+
+        button.cancel {
+            background: #757575;
+        }
+
+        input,
+        select {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #888;
+            background: #1a1a25;
+            color: #fff;
+        }
+
+        .form-row {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        #contextMenu {
+            position: absolute;
+            z-index: 1000;
+            display: none;
+            background: #292E3B;
+            border: 1px solid #44495a;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px #0007;
+            min-width: 100px;
+        }
+
+        #contextMenu button {
+            display: block;
+            width: 100%;
+            margin: 0;
+            border-radius: 0;
+            background: none;
+            text-align: left;
+            padding: 10px 16px;
+            border-bottom: 1px solid #44495a;
+            color: #fff;
+        }
+
+        #contextMenu button:last-child {
+            border-bottom: none;
+        }
+
+        #contextMenu button:hover {
+            background: #3444ee;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-row">
+        <label for="apiKeyInput" style="font-weight:bold;">API Key:</label>
+        <input id="apiKeyInput" type="text" value="" style="width:350px;" />
+        <button onclick="connect()">CONNECT</button>
+    </div>
+    <h2 style="text-align:center;">Device Manager</h2>
+    <div class="table-container">
+        <table id="deviceTable" oncontextmenu="return false;">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" /></th>
+                    <th>STT</th>
+                    <th>Device Id</th>
+                    <th>Device Name</th>
+                    <th>Status</th>
+                    <th>Proxy</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Device rows will be added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu">
+        <button onclick="contextFacebookRegister()">Facebook Register</button>
+        <button onclick="contextSetProxy()">Set Proxy</button>
+    </div>
+
+    <script src="./data/name.js"></script>
+    <script src="./phonecloud-ws.js"></script>
+    <script src="./phonecloud-actions.js"></script>
+    <script src="./phonecloud-api.js"></script>
+    <script src="./main.js"></script>
+</body>
+
+</html>

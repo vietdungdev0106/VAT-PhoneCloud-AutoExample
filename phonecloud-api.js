@@ -7,86 +7,77 @@ class PhoneCloudApi {
   }
 
   async _post(path, data = {}) {
-    // Tự động chèn api_key nếu chưa có
-    if (this.apiKey && !data.api_key) data.api_key = this.apiKey;
-
-    const res = await fetch(`${BASE_URL}${path}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`HTTP ${res.status} - ${text}`);
+    if (this.apiKey && !data.api_key) {
+      data.api_key = this.apiKey;
     }
-    return res.json();
+    try {
+      const res = await fetch(`${BASE_URL}${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        return res.json();
+      }
+    }catch (e) {
+
+    }
+    throw new Error("Api Error!");
   }
 
   // 1. Danh sách thiết bị của user (party)
-  listDevicePartyUser({ api_key, page = 1, limit = 10 } = {}) {
-    return this._post("/device/list-device-party-user", { page, limit, api_key });
+  listDevicePartyUser({ page = 1, limit = 10 } = {}) {
+    return this._post("/device/list-device-party-user", { page, limit });
   }
 
   // 2. Tìm kiếm sản phẩm với party user
-  searchProductWithPartyUser({ api_key, page = 1, limit = 10, classification = "DEVICE" } = {}) {
-    return this._post("/product/search-with-party-user", { page, limit, classification, api_key });
+  searchProductWithPartyUser({ page = 1, limit = 10, classification = "DEVICE" } = {}) {
+    return this._post("/product/search-with-party-user", { page, limit, classification });
   }
 
   // 3. Tạo order mới cho party
-  createOrderForParty({ api_key, orders = [] }) {
-    return this._post("/order/create-order-for-party", { orders, api_key });
+  createOrderForParty({ orders = [] }) {
+    return this._post("/order/create-order-for-party", { orders });
   }
 
   // 4. Cập nhật order cho party
-  updateOrderForParty({ api_key, orders = [] }) {
-    return this._post("/order/update-order-for-party", { orders, api_key });
+  updateOrderForParty({ orders = [] }) {
+    return this._post("/order/update-order-for-party", { orders });
   }
 
   // 5. Lấy danh sách order trong cart
-  listOrderInCartForParty({ api_key }) {
-    return this._post("/order/list-order-in-cart-for-party", { api_key });
+  listOrderInCartForParty({ }) {
+    return this._post("/order/list-order-in-cart-for-party", {});
   }
 
   // 6. Thanh toán order
-  paymentOrderParty({ api_key, order_ids = [] }) {
-    return this._post("/order/payment-order-party", { order_ids, api_key });
+  paymentOrderParty({ order_ids = [] }) {
+    return this._post("/order/payment-order-party", { order_ids });
   }
 
   // 7. Quản lý order (lọc danh sách order)
-  manageOrderParty({ api_key, filter = [{ page: 1, limit: 10 }], type = "BUY" } = {}) {
-    return this._post("/order/manage-order-party", { api_key, filter, type });
+  manageOrderParty({ filter = [{ page: 1, limit: 10 }], type = "BUY" } = {}) {
+    return this._post("/order/manage-order-party", { filter, type });
   }
 
   // 8. Gia hạn order
-  renewOrderParty({ api_key, orders = [] }) {
-    return this._post("/order/renew-order-party", { api_key, orders });
+  renewOrderParty({ orders = [] }) {
+    return this._post("/order/renew-order-party", { orders });
   }
 
-  async getProxyFromApiKey(apiKey) {
-    for (let i = 0; i < 60; i++) {
-      try {
-        const res = await fetch(`https://api.allorigins.win/raw?url=https://proxyxoay.org/api/get.php?key=${apiKey}&nhamang=Random&&tinhthanh=0`);
-        if (!res.ok) {
-          continue;
-        }
-        const body = await res.json();
-        const proxySocks5 = body.proxysocks5;
-        const proxyArr = proxySocks5.split(':');
-        
-        return {
-          type: "socks5",
-          host: proxyArr[0],
-          port: parseInt(proxyArr[1]),
-          username: proxyArr[2],
-          password: proxyArr[3]
-        }
-      } catch (e) {
-        // tiếp tục thử proxy khác
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  getNewIpRotateProxyParty(device) {
+    const proxy = device.config_device.proxy;
+    if (!proxy.api_key || proxy.api_key === ''){
+      throw new Error("Proxy chưa được thêm vào!");
     }
-    throw new Error("Không thể lấy proxy!");
+    return this._post("/proxy-api-key/get-new-ip-rotate-proxy-party", {
+      key_get_proxy: proxy.api_key,
+      device_id: device.id,
+      type_tcp: proxy.tcp_type,
+      location_id: proxy.location.id,
+      party: proxy.party
+    });
   }
 }

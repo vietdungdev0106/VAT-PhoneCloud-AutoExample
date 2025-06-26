@@ -28,13 +28,11 @@ function refreshDevices(page = 1) {
                 throw new Error("Api Device List Error " + data.code);
             }
             totalPages = Math.ceil(data.data.total / pageSize);
-            devices = (data.data.devices || []).map(item => ({
-                name: item.device_name || "",
-                id: item.id || "",
-                status: item.status === "ACTIVED" ? (item.device_status === "CONNECTED" ? "CONNECTING" : item.device_status) : item.status || "Unknown",
-                action: "Idle",
-                selected: false
-            }));
+            devices = (data.data.devices || []);
+            devices.forEach(d => {
+                d.selected = false
+                d.action = "Idle"
+            });
             renderTable();
 
             if (devices.length > 0) {
@@ -93,9 +91,9 @@ function renderTable() {
             </td>
             <td>${idx + 1}</td>
             <td>${dev.id}</td>
-            <td>${dev.name}</td>
-            <td>${dev.status}</td>
-            <td>${dev.proxy}</td>
+            <td>${dev.device_name}</td>
+            <td>${dev.status === "ACTIVED" ? (dev.device_status === "CONNECTED" ? "CONNECTING" : dev.device_status) : dev.status || "Unknown"}</td>
+            <td>${dev.config_device.proxy.api_key}</td>
             <td>${dev.action}</td>
         `;
         tr.oncontextmenu = (event) => showContextMenu(event, idx);
@@ -273,6 +271,9 @@ const dayMaps = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11
 const monthMaps = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 async function startRegisterFacebook(device) {
+    if (!device) {
+        return;
+    }
     let retryCount = 0;
     const maxRetry = 5; // số lần retry tối đa khi lỗi
     const delayAfterError = 5000; // đợi 5 giây sau khi có lỗi trước khi retry
@@ -306,7 +307,6 @@ async function loopRegisterFacebook(device) {
         const year = action.randomNumber(1985, 2005);
         const gender = genderMaps[action.randomNumber(0, 1)];
         const name = gender === "Male" ? nameMale[action.randomNumber(0, nameMale.length - 1)] : nameFemale[action.randomNumber(0, nameFemale.length - 1)];
-        const proxy = await api.getProxyFromApiKey(device.proxy);
 
         notifyDeviceAction(deviceId, "Bắt đầu cài đặt App Facebook.");
         const installChangeInfoResult = await action.installChangeInfoApp("596e6fe8-ebf9-4604-801f-56f58d124e3c", 5 * 60 * 1000);
@@ -332,7 +332,22 @@ async function loopRegisterFacebook(device) {
             throw new Error(clearAppDataResult.error);
         }
 
-        const connectProxyResult = await action.connectProxy(proxy.type, proxy.host, proxy.port, proxy.username, proxy.password);
+        let proxy;
+        for (let i=0; i < 120; i++) {
+            try {
+                const res = await api.getNewIpRotateProxyParty(device);
+                if (res) {
+                    proxy = res.data;
+                    notifyDeviceAction(deviceId, "Lấy IP mới thành công.");
+                    break;
+                }
+            }catch(e) {
+                notifyDeviceAction(deviceId, "Lấy proxy thất bại: " + (i + 1) + "/120");
+            } 
+            await action.sleep(1000);
+        }
+
+        const connectProxyResult = await action.connectProxy(proxy.tcp_type, proxy.ip_proxy, proxy.port, proxy.username, proxy.password);
         if (connectProxyResult.status) {
             if (!connectProxyResult.result) {
                 notifyDeviceAction(deviceId, "Kết nối proxy thất bại.");

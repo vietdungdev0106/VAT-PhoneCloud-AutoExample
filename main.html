@@ -183,7 +183,11 @@
 <body>
     <div class="form-row">
         <label for="apiKeyInput" style="font-weight:bold;">API Key:</label>
-        <input id="apiKeyInput" type="text" value="" style="width:350px;" />
+        <input id="apiKeyInput" type="text" value="" style="width:350px; margin-right:16px;" />
+    
+        <label for="appModApiKeyInput" style="font-weight:bold;">App Mod Api Key:</label>
+        <input id="appModApiKeyInput" type="text" value="" style="width:350px;" />
+    
         <button onclick="connect()">CONNECT</button>
     </div>
     <h2 style="text-align:center;">Device Manager</h2>
@@ -209,7 +213,6 @@
     <!-- Context Menu -->
     <div id="contextMenu">
         <button onclick="contextFacebookRegister()">Facebook Register</button>
-        <button onclick="contextSetProxy()">Set Proxy</button>
     </div>
 
     <script src="./data/name.js"></script>

@@ -14,12 +14,18 @@ let totalPages = 0;
 
 function connect() {
     const apiKey = getApiKey();
-    if (apiKey.length !== 0) {
-        api = new PhoneCloudApi(apiKey);
-        refreshDevices();
+    if (apiKey.length === 0) {
+        alert("Vui lòng Api Key. Chi tiết vui lòng đọc hướng dẫn sử dụng ở Repo!");
+        return;
     }
+    const appModApiKey = getAppModApiKey();
+    if (appModApiKey.length === 0) {
+        alert("Vui lòng thêm Api Key của ứng dụng. Chi tiết vui lòng đọc hướng dẫn sử dụng ở Repo!");
+        return;
+    }
+    api = new PhoneCloudApi(apiKey);
+    refreshDevices();
 }
-connect();
 
 function refreshDevices(page = 1) {
     api.listDevicePartyUser({ page: currentPage, limit: pageSize })
@@ -77,6 +83,10 @@ function connectWebSocket() {
 
 function getApiKey() {
     return document.getElementById('apiKeyInput').value.trim();
+}
+
+function getAppModApiKey() {
+    return document.getElementById('appModApiKeyInput').value.trim();
 }
 
 function renderTable() {
@@ -179,78 +189,6 @@ function notifyDeviceAction(deviceId, action) {
     renderTable();
 }
 
-function contextSetProxy() {
-    hideContextMenu();
-
-    // Xoá popup cũ nếu có
-    let oldPopup = document.getElementById('setProxyPopup');
-    if (oldPopup) oldPopup.remove();
-
-    // Tạo popup HTML
-    const popup = document.createElement('div');
-    popup.id = 'setProxyPopup';
-    popup.style.position = 'fixed';
-    popup.style.left = '50%';
-    popup.style.top = '50%';
-    popup.style.transform = 'translate(-50%,-50%)';
-    popup.style.zIndex = 2000;
-    popup.style.background = '#23262F';
-    popup.style.padding = '32px 24px 16px 24px';
-    popup.style.borderRadius = '16px';
-    popup.style.boxShadow = '0 8px 48px #000a';
-    popup.innerHTML = `
-        <h3 style="text-align:center;margin-top:0;">Set Proxy for Devices</h3>
-        <label style="font-weight:bold;" for="proxyListInput">List Proxy API Key (1 key mỗi dòng):</label><br>
-        <textarea id="proxyListInput" rows="7" style="width:350px;resize:vertical;margin-top:8px;background:#1a1a25;color:#fff;border-radius:8px;border:1px solid #555;font-size:14px;padding:8px;"></textarea>
-        <div style="margin-top:18px;text-align:right;">
-            <button class="save" onclick="saveProxyToDevices()">Save</button>
-            <button class="cancel" onclick="closeProxyPopup()">Cancel</button>
-        </div>
-    `;
-    document.body.appendChild(popup);
-
-    // Focus vào textarea
-    setTimeout(() => document.getElementById('proxyListInput').focus(), 50);
-}
-
-// Đóng popup
-function closeProxyPopup() {
-    let popup = document.getElementById('setProxyPopup');
-    if (popup) popup.remove();
-}
-
-// Hàm xử lý chia đều proxy và lưu vào device
-function saveProxyToDevices() {
-    const proxyListRaw = document.getElementById('proxyListInput').value.trim();
-    if (!proxyListRaw) {
-        alert("Vui lòng nhập ít nhất 1 proxy api key!");
-        return;
-    }
-
-    const proxyList = proxyListRaw
-        .split('\n')
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
-
-    const selected = devices.filter(d => d.selected);
-    if (selected.length === 0) {
-        alert("Vui lòng chọn ít nhất 1 thiết bị!");
-        return;
-    }
-    if (proxyList.length === 0) {
-        alert("Không có proxy nào!");
-        return;
-    }
-
-    // Chia đều proxy cho device đã chọn
-    for (let i = 0; i < selected.length; ++i) {
-        // Nếu proxy ít hơn số thiết bị thì lặp lại từ đầu
-        selected[i].proxy = proxyList[i % proxyList.length];
-    }
-    closeProxyPopup();
-    renderTable();
-}
-
 async function contextFacebookRegister() {
     if (contextMenuIdx !== null) {
         hideContextMenu();
@@ -282,7 +220,7 @@ async function startRegisterFacebook(device) {
         try {
             await loopRegisterFacebook(device);
             retryCount = 0; // reset retry khi thành công
-        } catch(e) {
+        } catch (e) {
             console.error(`Lỗi khi thực hiện đăng ký cho device ${device.id}:`, e);
             retryCount++;
             if (retryCount >= maxRetry) {
@@ -333,7 +271,7 @@ async function loopRegisterFacebook(device) {
         }
 
         let proxy;
-        for (let i=0; i < 120; i++) {
+        for (let i = 0; i < 120; i++) {
             try {
                 const res = await api.getNewIpRotateProxyParty(device);
                 if (res) {
@@ -341,9 +279,9 @@ async function loopRegisterFacebook(device) {
                     notifyDeviceAction(deviceId, "Lấy IP mới thành công.");
                     break;
                 }
-            }catch(e) {
+            } catch (e) {
                 notifyDeviceAction(deviceId, "Lấy proxy thất bại: " + (i + 1) + "/120");
-            } 
+            }
             await action.sleep(1000);
         }
 
@@ -364,7 +302,7 @@ async function loopRegisterFacebook(device) {
             console.log("checkProxyResult: ", checkProxyResult);
             if (checkProxyResult.status && checkProxyResult.result) {
                 hasInternet = true;
-                break;   
+                break;
             }
             await action.sleep(3000);
         }

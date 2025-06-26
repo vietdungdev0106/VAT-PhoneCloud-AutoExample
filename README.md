@@ -1,3 +1,5 @@
+![Demo](./intro/reg-fb.gif)
+
 Các bước để sử dụng:
   1. Đăng ký tài khoản VAT-PhoneCloud tại: https://phonecloud.one/.
   2. Cài đặt tool phonecloud lên điện thoại (hỗ trợ từ android 9 trở lên).

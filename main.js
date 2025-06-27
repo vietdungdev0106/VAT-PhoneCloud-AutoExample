@@ -247,7 +247,7 @@ async function loopRegisterFacebook(device) {
         const name = gender === "Male" ? nameMale[action.randomNumber(0, nameMale.length - 1)] : nameFemale[action.randomNumber(0, nameFemale.length - 1)];
 
         notifyDeviceAction(deviceId, "Bắt đầu cài đặt App Facebook.");
-        const installChangeInfoResult = await action.installChangeInfoApp("596e6fe8-ebf9-4604-801f-56f58d124e3c", 5 * 60 * 1000);
+        const installChangeInfoResult = await action.installChangeInfoApp(getAppModApiKey(), 5 * 60 * 1000);
         if (installChangeInfoResult.status) {
             if (installChangeInfoResult.result) {
                 notifyDeviceAction(deviceId, "Thay đổi thông tin ứng dụng thành công.");
